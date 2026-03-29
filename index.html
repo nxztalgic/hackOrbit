@@ -19,583 +19,25 @@
     @font-face { font-family: 'Mondwest'; src: url('./Mondwest-Regular.ec1b51ac.otf'); }
   </style>
 
+  <link rel="stylesheet" href="style.css">
+
   <!-- GSAP (needed for loader animation) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
-  <style>
-    /* ============================================================
-       DESIGN TOKENS
-    ============================================================ */
-    :root {
-      --bg-void:       #050505;
-      --bg-deep:       #0a0a0f;
-      --purple-core:   #7B00FF;
-      --purple-glow:   #9B30FF;
-      --purple-dark:   #3D0080;
-      --accent-gold:   #C8A84B;
-      --accent-star:   #FFFFFF;
-      --text-primary:  #FFFFFF;
-      --text-muted:    rgba(255,255,255,0.45);
-      --text-terminal: #C8A84B;
-      --ease-cinema:   cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* ============================================================
-       CSS RESET & BASE
-    ============================================================ */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      text-decoration: none;
-      list-style: none;
-    }
-    html { scroll-behavior: smooth; width: 100%; }
-    body {
-      width: 100%;
-      background: var(--bg-void);
-      color: var(--text-primary);
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
-    }
-
-    /* Noise overlay — sits above content but below loader */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 9998;
-      opacity: 0.55;
-    }
-
-    /* ============================================================
-       PAGE LOADER  (plain white, slides up via GSAP)
-    ============================================================ */
-    #page-loader {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #fff;
-      z-index: 99999;
-    }
-
-    /* ============================================================
-       FIXED HEADER / NAV
-    ============================================================ */
-    .fixed-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.7rem 2rem;
-      z-index: 200;
-    }
-    .logo-title {
-      display: flex;
-      align-items: center;
-      font-family: 'Neue Montreal Medium', sans-serif;
-      gap: 6px;
-      color: #fff;
-      font-size: 1.2rem;
-    }
-    .logo-title img { height: 18px; width: 18px; display: block; }
-    .nav-links { display: flex; gap: 1.5rem; }
-    .nav-links a {
-      color: #fff;
-      font-size: 1rem;
-      font-family: 'Neue Montreal Regular', sans-serif;
-    }
-    .nav-links sup { font-family: 'Rel', serif; }
-
-    /* ============================================================
-       HERO SECTION  (fullscreen video background)
-    ============================================================ */
-    #hero-container {
-      width: 100%;
-      height: 100vh;
-      position: relative;
-      padding-top: 60px;
-    }
-    .video__container {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      inset: 0;
-      background-image: url('./image.png');
-      z-index: -1;
-    }
-    .hero__section {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-
-    /* Hero main copy block */
-    .main__content {
-      position: absolute;
-      top: 45%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1.9rem;
-      padding: 2.5rem 2rem;
-    }
-    .main__content > p,
-    .main__content > div { text-align: center; }
-
-    .main__text {
-      line-height: 1;
-      font-size: 3.5rem;
-      font-family: 'Times New Roman', Times, serif;
-    }
-    .desc__text { font-family: monospace; font-size: 13px; color: #F6F996; }
-    .desc__text span { color: white; }
-
-    #ms {
-      font-family: "My Soul", cursive;
-      font-weight: 400;
-      font-style: normal;
-      display: inline-block;
-      margin-right: 2px;
-      font-size: 3.6rem;
-    }
-    #ppMon { font-family: 'Mondwest', sans-serif !important; }
-
-    .btn__container { padding-top: 2rem; position: relative; }
-    .btn__container #ppMon {
-      font-family: 'Mondwest', sans-serif !important;
-      font-size: 1.5rem;
-      display: inline-block;
-      transform: translateY(1px);
-    }
-    .btn__container button {
-      font-size: 1.3rem;
-      font-family: "Bebas Neue", sans-serif;
-      color: white;
-      background: none;
-      outline: none;
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-    }
-    .svg__container {
-      position: absolute;
-      top: 85%;
-      left: 80%;
-      transform: translate(-50%, -50%);
-    }
-
-    /* Hero bottom stats bar */
-    #footer-stats {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      padding: 12px 24px;
-      text-transform: uppercase;
-      font-family: monospace;
-    }
-    .stats-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      color: #fff;
-      padding: 10px 18px;
-      width: 100%;
-    }
-    .left-stat, .right-stat { display: flex; align-items: center; gap: 8px; color: #CCC8C8; }
-    .light  { color: white; }
-    .square { background-color: #E5B71D; width: 8px; height: 8px; }
-
-    /* ============================================================
-       SECTIONS 01-06  — shared layout
-    ============================================================ */
-    section {
-      position: relative;
-      padding: 140px 0;
-      overflow: hidden;
-    }
-    .container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 40px;
-    }
-
-    /* Section label */
-    .section-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.22em;
-      color: var(--text-terminal);
-      text-transform: uppercase;
-      margin-bottom: 28px;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.6s var(--ease-cinema), transform 0.6s var(--ease-cinema);
-    }
-
-    /* Glass card */
-    .glass-card {
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(123,0,255,0.2);
-      border-radius: 2px;
-      transition: border-color 0.4s var(--ease-cinema), box-shadow 0.4s var(--ease-cinema), transform 0.4s var(--ease-cinema);
-    }
-    .glass-card:hover {
-      border-color: var(--purple-glow);
-      box-shadow: 0 0 40px rgba(123,0,255,0.18), 0 20px 60px rgba(0,0,0,0.4);
-      transform: translateY(-4px);
-    }
-
-    /* Animate-in classes */
-    .anim-fade  { opacity: 0; transform: translateY(30px);  transition: opacity 0.7s var(--ease-cinema), transform 0.7s var(--ease-cinema); }
-    .anim-left  { opacity: 0; transform: translateX(-40px); transition: opacity 0.8s var(--ease-cinema), transform 0.8s var(--ease-cinema); }
-    .anim-right { opacity: 0; transform: translateX(40px);  transition: opacity 0.8s var(--ease-cinema), transform 0.8s var(--ease-cinema); }
-    .anim-scale { opacity: 0; transform: scale(0.94);       transition: opacity 0.7s var(--ease-cinema), transform 0.7s var(--ease-cinema); }
-    .visible    { opacity: 1 !important; transform: none !important; }
-
-    /* ── SECTION 01 — ABOUT ─────────────────── */
-    #about { background: var(--bg-deep); }
-    #about .glow-planet {
-      position: absolute; top: -150px; right: -200px;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(123,0,255,0.22) 0%, transparent 70%);
-      pointer-events: none; border-radius: 50%;
-    }
-    .about-header { margin-bottom: 60px; }
-    .about-label  { font-family: 'Inter', sans-serif; font-size: 15px; color: #fff; font-weight: 400; }
-    .slashes      { color: rgba(255,255,255,0.4); margin-right: 8px; letter-spacing: 2px; font-size: 12px; }
-    .about-main-text {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(1.35rem, 2.2vw, 1.85rem);
-      line-height: 1.45; color: #fff; font-weight: 400;
-      max-width: 1050px; margin-bottom: 80px;
-    }
-    .about-main-text em { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 400; }
-    .underline-text { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
-    .asterisk       { color: var(--purple-glow); font-size: 0.8em; vertical-align: super; }
-
-    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-bottom: 80px; }
-    .stat-block { display: flex; flex-direction: column; gap: 12px; }
-    .stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.05em; color: var(--accent-gold); }
-    .stat-number {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(4.5rem, 7.5vw, 7.5rem);
-      font-weight: 700; line-height: 1; color: #fff;
-      letter-spacing: -0.04em; display: flex; align-items: baseline;
-    }
-    .stat-value-gradient {
-      background: linear-gradient(to bottom, #ffffff 0%, #a3a3a3 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text; color: transparent;
-    }
-    .stat-suffix {
-      font-size: 0.45em; font-weight: 600; letter-spacing: -0.02em;
-      background: linear-gradient(to bottom, #d8b4fe 0%, var(--purple-glow) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text; color: transparent;
-    }
-    .about-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 56px; }
-
-    .highlight-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-    .highlight-card { padding: 32px 28px; display: flex; flex-direction: column; gap: 16px; }
-    .highlight-glyph { font-size: 1.5rem; color: var(--purple-glow); margin-bottom: 8px; }
-    .highlight-card h4 { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--text-terminal); text-transform: uppercase; margin-bottom: 6px; }
-    .highlight-value { font-family: 'Inter', sans-serif; font-size: 1.25rem; font-weight: 600; color: #fff; }
-    .highlight-card p { font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.7; font-weight: 300; }
-
-    /* ── SECTION 02 — THEMES ────────────────── */
-    #themes { background: var(--bg-void); }
-    #themes::before {
-      content: ''; position: absolute; bottom: 0; left: -100px;
-      width: 800px; height: 600px;
-      background: radial-gradient(ellipse at bottom left, rgba(61,0,128,0.25) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    #themes h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); line-height: 1.05; margin-bottom: 16px; }
-    #themes h2 em     { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; }
-    #themes h2 strong { font-family: 'Big Shoulders Display', sans-serif; font-weight: 900; letter-spacing: 0.02em; }
-    .themes-sub { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text-muted); letter-spacing: 0.12em; margin-bottom: 64px; }
-
-    .orbital-ring-wrap {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none; opacity: 0.07;
-      animation: orbit-spin 60s linear infinite;
-    }
-    @keyframes orbit-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-
-    .tracks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; position: relative; z-index: 1; }
-    .track-card {
-      padding: 36px 30px; position: relative; overflow: hidden; cursor: default;
-      transition: transform 0.5s var(--ease-cinema), box-shadow 0.5s var(--ease-cinema), border-color 0.4s var(--ease-cinema);
-    }
-    .track-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--purple-glow); transition: width 0.4s var(--ease-cinema); }
-    .track-card:hover::after { width: 100%; }
-    .track-card:hover { transform: translateY(-8px); box-shadow: 0 0 60px rgba(123,0,255,0.2), 0 30px 60px rgba(0,0,0,0.5); border-color: var(--purple-glow); }
-    .track-card:nth-child(even) { clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%); }
-    .track-num  { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.25em; color: var(--text-terminal); margin-bottom: 18px; }
-    .track-glyph { font-size: 2rem; color: var(--purple-glow); margin-bottom: 12px; display: block; opacity: 0.8; }
-    .track-name { font-family: 'Big Shoulders Display', sans-serif; font-size: 1.55rem; font-weight: 700; letter-spacing: 0.03em; color: #fff; margin-bottom: 12px; line-height: 1.1; }
-    .track-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; font-weight: 300; }
-    .track-card:nth-child(1) { background: rgba(123,0,255,0.05); border-color: rgba(123,0,255,0.18); }
-    .track-card:nth-child(2) { background: rgba(123,0,255,0.03); border-color: rgba(123,0,255,0.14); }
-    .track-card:nth-child(3) { background: rgba(123,0,255,0.06); border-color: rgba(123,0,255,0.2);  }
-    .track-card:nth-child(4) { background: rgba(123,0,255,0.04); border-color: rgba(123,0,255,0.16); }
-    .track-card:nth-child(5) { background: rgba(123,0,255,0.05); border-color: rgba(123,0,255,0.18); }
-    .track-card:nth-child(6) { background: rgba(123,0,255,0.03); border-color: rgba(123,0,255,0.15); }
-
-    /* ── SECTION 03 — TIMELINE ──────────────── */
-    #timeline { background: var(--bg-deep); }
-    #timeline .glow-center {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(123,0,255,0.1) 0%, transparent 70%);
-      pointer-events: none; border-radius: 50%;
-    }
-    #timeline h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); line-height: 1.05; margin-bottom: 80px; text-align: center; }
-    #timeline h2 em     { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; }
-    #timeline h2 strong { font-family: 'Big Shoulders Display', sans-serif; font-weight: 900; letter-spacing: 0.02em; }
-
-    .timeline-wrap { position: relative; max-width: 900px; margin: 0 auto; }
-    .timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; transform: translateX(-50%); overflow: hidden; }
-    .timeline-line-inner {
-      width: 100%; height: 0;
-      background: linear-gradient(to bottom, transparent, rgba(123,0,255,0.6) 10%, rgba(123,0,255,0.6) 90%, transparent);
-      border-left: 1px dashed rgba(123,0,255,0.5);
-      transition: height 1.5s var(--ease-cinema);
-    }
-    .timeline-line.drawn .timeline-line-inner { height: 100%; }
-    .timeline-item { display: grid; grid-template-columns: 1fr 60px 1fr; align-items: center; gap: 0; margin-bottom: 56px; position: relative; }
-    .timeline-item:nth-child(odd)  .tl-content { grid-column: 1; text-align: right; padding-right: 40px; }
-    .timeline-item:nth-child(odd)  .tl-spacer  { grid-column: 2; }
-    .timeline-item:nth-child(odd)  .tl-empty   { grid-column: 3; }
-    .timeline-item:nth-child(even) .tl-empty   { grid-column: 1; }
-    .timeline-item:nth-child(even) .tl-spacer  { grid-column: 2; }
-    .timeline-item:nth-child(even) .tl-content { grid-column: 3; text-align: left; padding-left: 40px; }
-    .tl-node { display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; }
-    .tl-dot  {
-      width: 16px; height: 16px; border-radius: 50%;
-      background: var(--purple-core); border: 2px solid var(--purple-glow);
-      box-shadow: 0 0 0 0 rgba(123,0,255,0.6);
-      animation: pulse-node 2.5s ease-out infinite;
-    }
-    @keyframes pulse-node {
-      0%   { box-shadow: 0 0 0 0  rgba(123,0,255,0.6); }
-      70%  { box-shadow: 0 0 0 10px rgba(123,0,255,0); }
-      100% { box-shadow: 0 0 0 0  rgba(123,0,255,0); }
-    }
-    .tl-content { padding: 28px 32px; border-radius: 2px; position: relative; }
-    .timeline-item:nth-child(odd)  .tl-content::after  { content: ''; position: absolute; right: -40px; top: 50%; width: 40px; height: 1px; background: rgba(123,0,255,0.4); }
-    .timeline-item:nth-child(even) .tl-content::before { content: ''; position: absolute; left:  -40px; top: 50%; width: 40px; height: 1px; background: rgba(123,0,255,0.4); }
-    .tl-phase { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.25em; color: var(--text-terminal); text-transform: uppercase; margin-bottom: 8px; }
-    .tl-date  { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 0.08em; }
-    .tl-title { font-family: 'Big Shoulders Display', sans-serif; font-size: 1.2rem; font-weight: 700; letter-spacing: 0.05em; color: #fff; margin-bottom: 8px; }
-    .tl-desc  { font-size: 0.85rem; color: rgba(255,255,255,0.55); line-height: 1.7; font-weight: 300; }
-    .tl-launch .tl-content { border-color: rgba(123,0,255,0.5) !important; box-shadow: 0 0 40px rgba(123,0,255,0.15); }
-    .tl-launch .tl-dot     { width: 22px; height: 22px; background: #fff; border-color: var(--purple-glow); box-shadow: 0 0 20px rgba(123,0,255,0.8); }
-    .tl-launch .tl-title   { color: var(--purple-glow); font-size: 1.35rem; }
-    .launch-badge {
-      display: inline-block; font-family: 'IBM Plex Mono', monospace;
-      font-size: 9px; letter-spacing: 0.2em; color: var(--bg-deep);
-      background: var(--purple-glow); padding: 3px 10px;
-      border-radius: 2px; margin-left: 10px; vertical-align: middle;
-    }
-
-    /* ── SECTION 04 — PRIZES ────────────────── */
-    #prizes { background: var(--bg-void); }
-    #prizes .glow-gold {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 700px; height: 500px;
-      background: radial-gradient(ellipse, rgba(200,168,75,0.08) 0%, rgba(123,0,255,0.06) 40%, transparent 70%);
-      pointer-events: none; border-radius: 50%;
-    }
-    .starfield { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-    #prizes h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); line-height: 1.05; margin-bottom: 16px; text-align: center; }
-    #prizes h2 em     { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; }
-    #prizes h2 strong { font-family: 'Big Shoulders Display', sans-serif; font-weight: 900; letter-spacing: 0.02em; }
-    .prizes-sub { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--text-terminal); letter-spacing: 0.15em; text-align: center; margin-bottom: 72px; }
-
-    .podium { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 24px; align-items: end; margin-bottom: 48px; }
-    .prize-card { padding: 40px 32px; text-align: center; position: relative; border-radius: 2px; }
-    .prize-card.winner {
-      background: rgba(200,168,75,0.05); border: 1px solid rgba(200,168,75,0.35);
-      padding-top: 56px;
-      box-shadow: 0 0 60px rgba(200,168,75,0.12), 0 0 120px rgba(123,0,255,0.08);
-      animation: float-winner 4s ease-in-out infinite;
-    }
-    @keyframes float-winner { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-    .winner-star {
-      position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
-      font-size: 2rem; color: var(--accent-gold);
-      filter: drop-shadow(0 0 12px rgba(200,168,75,0.7));
-      animation: star-pulse 2s ease-in-out infinite;
-    }
-    @keyframes star-pulse {
-      0%, 100% { filter: drop-shadow(0 0 12px rgba(200,168,75,0.7)); }
-      50%       { filter: drop-shadow(0 0 24px rgba(200,168,75,1)); }
-    }
-    .prize-card.winner::after {
-      content: ''; position: absolute; inset: -1px; border-radius: 3px;
-      background: linear-gradient(135deg, rgba(200,168,75,0.6), transparent 40%, rgba(200,168,75,0.3) 60%, transparent);
-      pointer-events: none; opacity: 0.5;
-      animation: shimmer-gold 3s linear infinite; background-size: 200% 200%;
-    }
-    @keyframes shimmer-gold { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    .prize-card.second { background: rgba(123,0,255,0.04); border: 1px solid rgba(123,0,255,0.3); }
-    .prize-card.third  { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.12); }
-    .prize-role   { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.25em; color: var(--text-terminal); text-transform: uppercase; margin-bottom: 16px; }
-    .prize-amount { font-family: 'Big Shoulders Display', sans-serif; font-size: clamp(2.8rem, 5vw, 4.5rem); font-weight: 900; line-height: 1; margin-bottom: 6px; letter-spacing: -0.02em; }
-    .winner .prize-amount { color: var(--accent-gold); text-shadow: 0 0 40px rgba(200,168,75,0.4); }
-    .second .prize-amount { color: var(--purple-glow); text-shadow: 0 0 30px rgba(123,0,255,0.4); }
-    .third  .prize-amount { color: rgba(255,255,255,0.85); }
-    .prize-place  { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 0.15em; margin-bottom: 20px; }
-    .prize-perks  { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .prize-perks li { font-size: 0.82rem; color: rgba(255,255,255,0.5); font-weight: 300; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .prize-perks li::before { content: '✦'; color: var(--purple-glow); font-size: 0.65rem; }
-    .track-prizes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px; }
-    .track-prize-card { padding: 24px 28px; display: flex; align-items: center; gap: 20px; }
-    .track-prize-card .tp-icon  { font-size: 1.2rem; color: var(--purple-glow); opacity: 0.8; }
-    .track-prize-card .tp-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: var(--text-terminal); text-transform: uppercase; margin-bottom: 4px; }
-    .track-prize-card .tp-desc  { font-size: 0.85rem; color: var(--text-muted); font-weight: 300; }
-
-    /* ── SECTION 05 — FAQ ───────────────────── */
-    #faq { background: var(--bg-deep); }
-    #faq .glow-left {
-      position: absolute; top: 50%; left: -200px; transform: translateY(-50%);
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(61,0,128,0.2) 0%, transparent 70%);
-      pointer-events: none; border-radius: 50%;
-    }
-    .faq-grid { display: grid; grid-template-columns: 35fr 65fr; gap: 80px; align-items: start; }
-    #faq h2 { font-size: clamp(2.8rem, 5vw, 4.2rem); line-height: 1.05; margin-bottom: 40px; }
-    #faq h2 em     { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; }
-    #faq h2 strong { font-family: 'Big Shoulders Display', sans-serif; font-weight: 900; letter-spacing: 0.02em; }
-    .faq-deco-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.25rem; color: var(--text-muted); line-height: 1.8; margin-top: 20px; }
-    .faq-arc { margin-top: 48px; opacity: 0.15; }
-    .accordion { display: flex; flex-direction: column; gap: 12px; }
-    .acc-item { border: 1px solid rgba(123,0,255,0.15); border-radius: 2px; background: rgba(255,255,255,0.02); overflow: hidden; transition: border-color 0.3s var(--ease-cinema), background 0.3s var(--ease-cinema); }
-    .acc-item.open { border-color: var(--purple-core); border-left-width: 2px; background: rgba(123,0,255,0.04); }
-    .acc-header { display: flex; align-items: center; gap: 16px; padding: 22px 24px; cursor: pointer; user-select: none; }
-    .acc-num    { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-terminal); letter-spacing: 0.15em; white-space: nowrap; }
-    .acc-q      { flex: 1; font-size: 0.95rem; color: rgba(255,255,255,0.85); font-weight: 400; }
-    .acc-toggle { font-size: 1.1rem; color: var(--purple-glow); transition: transform 0.3s var(--ease-cinema); line-height: 1; }
-    .acc-item.open .acc-toggle { transform: rotate(45deg); }
-    .acc-body { max-height: 0; overflow: hidden; transition: max-height 0.45s var(--ease-cinema); }
-    .acc-body-inner { padding: 0 24px 24px calc(24px + 16px + 40px); font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.8; font-weight: 300; }
-
-    /* ── SECTION 06 — CTA ───────────────────── */
-    .cta-section {
-      background: linear-gradient(to bottom, var(--bg-void) 0%, #2a164d 50%, #a28ebf 100%);
-      padding: 160px 0; display: flex; justify-content: center; align-items: center;
-      text-align: center; min-height: 60vh;
-    }
-    .cta-content { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-    .cta-ready { font-family: 'Inter', sans-serif; font-weight: 300; font-style: italic; font-size: clamp(3.5rem, 7vw, 6rem); line-height: 1; color: #fff; }
-    .cta-launch-wrapper { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: -10px; }
-    .cta-sparkle { width: clamp(50px, 8vw, 80px); height: clamp(50px, 8vw, 80px); }
-    .cta-launch  { font-family: 'Inter', sans-serif; font-weight: 700; font-size: clamp(4.5rem, 9vw, 8rem); line-height: 1; color: #fff; letter-spacing: -0.02em; }
-    .cta-subtitle { font-family: 'Inter', sans-serif; font-style: italic; font-size: clamp(1.2rem, 2vw, 1.8rem); color: rgba(255,255,255,0.7); margin-top: 10px; font-weight: 300; }
-
-    /* ── FOOTER ─────────────────────────────── */
-    .site-footer { background: #000; padding: 80px 0 40px; border-top: 1px solid rgba(255,255,255,0.05); }
-    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.5fr; gap: 40px; margin-bottom: 80px; }
-    .footer-brand-col { display: flex; flex-direction: column; gap: 24px; }
-    .footer-logo { display: flex; align-items: center; gap: 12px; font-size: 1.2rem; font-weight: 500; }
-    .footer-tagline { font-size: 0.9rem; color: rgba(255,255,255,0.7); }
-    .footer-credits { font-size: 0.8rem; color: rgba(255,255,255,0.7); line-height: 1.5; margin-top: auto; }
-    .footer-heading { font-size: 0.9rem; font-weight: 500; margin-bottom: 24px; color: #fff; }
-    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 16px; }
-    .footer-links a { color: rgba(255,255,255,0.7); font-size: 0.9rem; transition: color 0.2s; }
-    .footer-links a:hover { color: #fff; }
-    .footer-contact-links { display: flex; flex-direction: column; gap: 20px; }
-    .underline-link { color: rgba(255,255,255,0.7); text-decoration: underline; text-underline-offset: 4px; font-size: 0.9rem; line-height: 1.5; transition: color 0.2s; }
-    .underline-link:hover { color: #fff; }
-    .footer-email-link { display: inline-flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.9); font-size: 0.9rem; margin-bottom: 24px; }
-    .footer-socials { display: flex; gap: 16px; }
-    .footer-socials a { color: rgba(255,255,255,0.9); transition: color 0.2s, transform 0.2s; }
-    .footer-socials a:hover { color: var(--purple-glow); transform: translateY(-2px); }
-    .footer-bottom { display: flex; flex-direction: column; gap: 24px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .footer-bottom-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: rgba(255,255,255,0.5); }
-    .footer-status-left { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: rgba(255,255,255,0.3); text-transform: uppercase; }
-    .status-dot { display: inline-block; width: 8px; height: 8px; background: var(--purple-glow); margin-right: 8px; animation: blink-dot 2s step-end infinite; }
-    @keyframes blink-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-
-    /* ============================================================
-       RESPONSIVE
-    ============================================================ */
-    @media (max-width: 1024px) {
-      .highlight-grid { grid-template-columns: repeat(2, 1fr); }
-      .tracks-grid    { grid-template-columns: repeat(2, 1fr); }
-      .podium         { grid-template-columns: 1fr; gap: 20px; align-items: stretch; }
-      .prize-card.winner { animation: none; }
-      .winner-star    { display: none; }
-      .track-prizes   { grid-template-columns: 1fr; }
-      .faq-grid       { grid-template-columns: 1fr; }
-      .faq-deco, .faq-arc { display: none; }
-    }
-    @media (max-width: 768px) {
-      section   { padding: 90px 0; }
-      .container { padding: 0 20px; }
-      .stats-row  { grid-template-columns: 1fr; gap: 32px; }
-      .stat-number { font-size: clamp(3.5rem, 12vw, 4.5rem); }
-      .highlight-grid { grid-template-columns: 1fr; }
-      .tracks-grid    { grid-template-columns: 1fr; }
-      .timeline-item  { grid-template-columns: 40px 1fr; }
-      .timeline-item:nth-child(odd)  .tl-content,
-      .timeline-item:nth-child(even) .tl-content { grid-column: 2; text-align: left; padding-left: 24px; padding-right: 0; }
-      .timeline-item:nth-child(odd)  .tl-content::after  { display: none; }
-      .timeline-item:nth-child(even) .tl-content::before { display: none; }
-      .timeline-item:nth-child(odd)  .tl-spacer,
-      .timeline-item:nth-child(even) .tl-spacer { grid-column: 1; }
-      .timeline-item:nth-child(odd)  .tl-empty,
-      .timeline-item:nth-child(even) .tl-empty  { display: none; }
-      .timeline-line  { left: 20px; }
-      .footer-grid    { grid-template-columns: 1fr; gap: 40px; }
-      .footer-bottom-row { flex-direction: column; gap: 16px; text-align: center; }
-    }
-    @media (max-width: 600px) {
-      .fixed-header { flex-direction: column; align-items: stretch; padding: 0.5rem 1rem; }
-      .logo-title   { justify-content: center; }
-      .nav-links    { justify-content: center; }
-      #hero-container { padding-top: 75px; }
-      #footer-stats { padding: 6px 6px; }
-      .stats-bar    { flex-direction: column; align-items: stretch; gap: 7px; padding: 8px 7px; }
-      .left-stat, .right-stat { gap: 10px; justify-content: flex-start; }
-    }
-  </style>
 </head>
 <body>
 
-  <!-- ════════════════════════════════════════
-       PAGE LOADER — white screen, slides up
-  ═════════════════════════════════════════════ -->
+  <!-- Loader: White Screen, Slides Up -->
   <div id="page-loader"></div>
 
-  <!-- ════════════════════════════════════════
-       FIXED HEADER / NAV
-  ═════════════════════════════════════════════ -->
-  <header class="fixed-header">
+  <!-- Header -->
+  <header class="fixed-header" role="banner">
     <div class="logo-title">
-      <img src="./logo23.png" alt="HackOrbit">
+      <img src="./logo23.png" alt="HackOrbit logo" width="18" height="18">
       HackOrbit
     </div>
-    <nav class="nav-links">
+
+    <nav class="nav-links" aria-label="Primary navigation">
       <a href="#about"><sup>/01 </sup>About</a>
       <a href="#themes"><sup>/02 </sup>Themes</a>
       <a href="#timeline"><sup>/03 </sup>Timeline</a>
@@ -603,68 +45,121 @@
       <a href="#faq"><sup>/05 </sup>FAQ</a>
       <a href="#contact"><sup>/06 </sup>Contact</a>
     </nav>
+
+    <button
+      class="hamburger"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      type="button"
+    >
+      <span class="hamburger__bar"></span>
+      <span class="hamburger__bar"></span>
+      <span class="hamburger__bar"></span>
+    </button>
   </header>
 
-  <!-- ════════════════════════════════════════
-       HERO  (fullscreen + video bg)
-  ═════════════════════════════════════════════ -->
-  <div id="hero-container">
-    <div class="video__container">
-    </div>
+  <!-- ═══════════════ MOBILE OVERLAY ═══════════════ -->
+  <div
+    class="mobile-menu"
+    id="mobile-menu"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Mobile navigation"
+    hidden
+  >
+    <!-- Close (×) button inside overlay -->
+    <button
+      class="mobile-menu__close"
+      aria-label="Close navigation menu"
+      type="button"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+        <line x1="2" y1="2" x2="18" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="18" y1="2" x2="2" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
 
-    <div class="hero__section">
-      <div class="main__content">
-        <p class="desc__text">National Level Online Hackathon</p>
-        <div class="main__text">
-          <span id="ms">H</span>ACK <span id="ms">O</span>RBIT<br>
-          <span id="ppMon">©2026⚗✨</span><br>
-          GET INTO THE ORBIT OF<br>
-          <span id="ppMon">☼INNOVATION☀</span>
-        </div>
-        <p class="desc__text">
-          <span>By</span><br>
-          Digital Learning Group<br>
-          <span>&amp;</span><br>
-          Madhav Institute of Technology<br>&amp; Science, Gwalior
-        </p>
-        <div class="btn__container">
-          <button>Register <span id="ppMon">☕</span></button>
-          <div class="svg__container">
-            <svg width="211.5" height="61.2" viewBox="0 0 235 68" fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style="transform:scale(0.9);transform-origin:left top;">
-              <path d="M233.5 28.8C233.5 40.1994 212.289 49.2943 182.694 55.2233M182.694 55.2233C114.411 68.9027 1.50002 65.7295 1.5 35.1239C1.49997 -8.74694 173.763 -7.57411 193.768 26.3913C201.106 38.8492 193.122 48.5085 182.694 55.2233ZM182.694 55.2233C171.121 62.6746 156.537 66.5 156.537 66.5"
-                stroke="white" stroke-width="3"/>
-            </svg>
-          </div>
-        </div>
+    <nav class="mobile-menu__nav" aria-label="Mobile navigation links">
+      <a class="mobile-menu__link" href="#about"    data-index="01">About</a>
+      <a class="mobile-menu__link" href="#themes"   data-index="02">Themes</a>
+      <a class="mobile-menu__link" href="#timeline" data-index="03">Timeline</a>
+      <a class="mobile-menu__link" href="#prizes"   data-index="04">Prizes</a>
+      <a class="mobile-menu__link" href="#faq"      data-index="05">FAQ</a>
+      <a class="mobile-menu__link" href="#contact"  data-index="06">Contact</a>
+    </nav>
+  </div>
+
+
+
+  <!-- Hero Section -->
+   <div id="hero-container">
+
+  <!-- Video background — untouched -->
+  <div class="video__container">
+    <video src="./spectraNoise.webm" autoplay loop muted playsinline></video>
+  </div>
+
+  <div class="hero__section">
+
+    <!-- Main copy block -->
+    <div class="main__content" aria-label="Hero content">
+      <p class="desc__text">National Level Online Hackathon</p>
+
+      <div class="main__text" role="heading" aria-level="1">
+        <span id="ms">H</span>ACK <span id="ms">O</span>RBIT<br>
+        <span id="ppMon">©2026⚗✨</span><br>
+        GET INTO THE ORBIT OF<br>
+        <span id="ppMon">☼INNOVATION☀</span>
       </div>
 
-      <!-- Hero bottom bar -->
-      <div class="main__content__footer" id="footer-stats">
-        <div class="stats-bar">
-          <div class="left-stat">
-            <span>[X]: </span><span class="light" id="x__value">0</span>
-            <span>[Y]: </span><span class="light" id="y__value">0</span>
-          </div>
-          <div class="right-stat">
-            <div class="square"></div>
-            <span>Location: <span class="light">Gwalior, IN</span></span>
-            <span>Time: <span class="light" id="footer-time">00:00</span> <span class="light" id="footer-ampm">AM</span></span>
-          </div>
+      <p class="desc__text">
+        <span>By</span><br>
+        Digital Learning Group<br>
+        <span>&amp;</span><br>
+        Madhav Institute of Technology<br>&amp; Science, Gwalior
+      </p>
+
+      <div class="btn__container" id="btn-wrapper">
+        <button type="button" aria-label="Register for HackOrbit 2026">
+          Register <span id="ppMon">☕</span>
+        </button>
+        <!-- Decorative SVG arrow — hidden on mobile via CSS -->
+        <div class="svg__container" aria-hidden="true">
+          <svg width="211.5" height="61.2" viewBox="0 0 235 68" fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style="transform:scale(0.9);transform-origin:left top;">
+            <path id="orbit-path" d="M233.5 28.8C233.5 40.1994 212.289 49.2943 182.694 55.2233M182.694 55.2233C114.411 68.9027 1.50002 65.7295 1.5 35.1239C1.49997 -8.74694 173.763 -7.57411 193.768 26.3913C201.106 38.8492 193.122 48.5085 182.694 55.2233ZM182.694 55.2233C171.121 62.6746 156.537 66.5 156.537 66.5"
+              stroke="white" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+    </div><!-- /main__content -->
+
+    <!-- Bottom stats bar -->
+    <div class="main__content__footer" id="footer-stats" aria-label="Status bar">
+      <div class="stats-bar">
+        <div class="left-stat">
+          <span>[X]: </span><span class="light" id="x__value">0</span>
+          <span>[Y]: </span><span class="light" id="y__value">0</span>
+        </div>
+        <div class="right-stat">
+          <div class="square" aria-hidden="true"></div>
+          <span>Location: <span class="light">Gwalior, IN</span></span>
+          <span>Time: <span class="light" id="footer-time">00:00</span> <span class="light" id="footer-ampm">AM</span></span>
         </div>
       </div>
     </div>
-  </div><!-- /hero-container -->
 
-  <!-- ════════════════════════════════════════
-       SECTION 01 — ABOUT
-  ═════════════════════════════════════════════ -->
-  <section id="about">
+  </div><!-- /hero__section -->
+</div><!-- /hero-container -->
+
+
+<section id="about">
     <div class="glow-planet"></div>
     <div class="container">
       <div class="about-header anim-fade">
-        <span class="about-label"><span class="slashes">///</span> About</span>
+        <span class="about-label">✦ 02 / About</span>
       </div>
       <div class="about-content">
         <p class="about-main-text anim-fade" style="transition-delay:0.1s">
@@ -821,7 +316,6 @@
   ═════════════════════════════════════════════ -->
   <section id="prizes">
     <div class="glow-gold"></div>
-    <canvas class="starfield" id="starCanvas"></canvas>
     <div class="container">
       <p class="section-label anim-fade" style="text-align:center">✦ 04 / MISSION REWARDS</p>
       <h2 class="anim-fade" style="transition-delay:0.1s;text-align:center"><em>Prize</em> <strong>✦ CONSTELLATION</strong></h2>
@@ -885,13 +379,10 @@
       <h2 class="cta-title">
         <span class="cta-ready">Ready to</span><br>
         <div class="cta-launch-wrapper">
-          <svg class="cta-sparkle" viewBox="0 0 100 100" fill="none">
-            <path d="M50 0 C50 40 60 50 100 50 C60 50 50 60 50 100 C50 60 40 50 0 50 C40 50 50 40 50 0 Z" stroke="white" stroke-width="3"/>
-          </svg>
-          <span class="cta-launch">Launch?</span>
+          <span class="cta-launch">✨Launch?</span>
         </div>
       </h2>
-      <p class="cta-subtitle">Your orbit begins here</p>
+      <p class="cta-subtitle">Your orbit begins here!</p>
     </div>
   </section>
 
@@ -904,7 +395,7 @@
         <div class="footer-brand-col">
           <div class="footer-logo">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span>Hack Orbit</span>
+            <span>HackOrbit</span>
           </div>
           <p class="footer-tagline">Get into the orbit of innovation</p>
           <p class="footer-credits">BY DIGITAL LEARNING GROUP<br>&amp; MITS GWALIOR</p>
@@ -943,185 +434,14 @@
       <div class="footer-bottom">
         <div class="footer-bottom-row">
           <p>© 2026 HackOrbit · All Rights Reserved</p>
-          <p>Made with ✦ by the HackOrbit Dev Team</p>
+          <p>Made with ✦ by Mohit and Mahi</p>
         </div>
-        <span class="footer-status-left">[x]: 0000, [y]: 0000</span>
       </div>
     </div>
   </footer>
 
-  <!-- ════════════════════════════════════════
-       SCRIPTS
-  ═════════════════════════════════════════════ -->
 
-  <!-- External app.js (user supplies this file) -->
-  <script src="./app.js"></script>
 
-  <script>
-    /* ── 1. GSAP Loader: white screen slides up after 1.4 s ──────── */
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        gsap.to('#page-loader', {
-          y: '-100%',
-          duration: 1,
-          ease: 'power2.inOut',
-          onComplete() {
-            const loader = document.getElementById('page-loader');
-            if (loader) loader.style.display = 'none';
-          }
-        });
-      }, 1400);
-    });
-
-    /* ── 2. Mouse coordinates (hero footer bar) ──────────────────── */
-    const xVal = document.getElementById('x__value');
-    const yVal = document.getElementById('y__value');
-    document.addEventListener('mousemove', e => {
-      xVal.textContent = e.clientX;
-      yVal.textContent = e.clientY;
-    });
-
-    /* ── 3. Live 12-hour clock ───────────────────────────────────── */
-    function updateFooterClock() {
-      const now  = new Date();
-      let   h    = now.getHours();
-      const m    = now.getMinutes();
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const h12  = h % 12 || 12;
-      const mm   = String(m).padStart(2, '0');
-      document.getElementById('footer-time').textContent = `${h12}:${mm}`;
-      document.getElementById('footer-ampm').textContent = ampm;
-    }
-    updateFooterClock();
-    setInterval(updateFooterClock, 1000);
-
-    /* ── 4. FAQ Accordion (built from data array) ────────────────── */
-    const accordionData = [
-      { q: 'Who can participate in HackOrbit 2026?',
-        a: 'Any undergraduate or postgraduate student enrolled in a recognized institution across India. Teams of 2–4 members are required. Solo participation is not allowed — assemble your crew.' },
-      { q: 'Is HackOrbit 2026 free to participate in?',
-        a: 'Yes. Registration is completely free. All you need is your ideas, your laptop, and an internet connection. No fuel cost for this orbit.' },
-      { q: 'How many members can be in a team?',
-        a: 'Teams must have a minimum of 2 and a maximum of 4 members. Cross-college teams are encouraged — diversity of perspective makes stronger missions.' },
-      { q: 'Do we need to submit a project idea before the hackathon?',
-        a: 'A preliminary idea brief is required during registration to help us understand your intended track. Ideas can evolve — we expect them to. The mission refines in flight.' },
-      { q: 'Will there be mentors during the hackathon?',
-        a: "Absolutely. Domain experts and industry mentors will be available via scheduled office hours and a dedicated Discord server throughout the 48-hour hack. You won't fly blind." },
-      { q: 'What should our final submission include?',
-        a: 'A working prototype or demo, a project repository link, a 3-minute demo video, and a brief project description covering the problem, solution, tech stack, and impact. The mission log must be complete.' }
-    ];
-
-    const accordionRoot = document.getElementById('accordionRoot');
-    accordionData.forEach((item, index) => {
-      const div = document.createElement('div');
-      div.className = 'acc-item';
-      div.innerHTML = `
-        <div class="acc-header">
-          <span class="acc-num">Q.0${index + 1}</span>
-          <span class="acc-q">${item.q}</span>
-          <span class="acc-toggle">⊕</span>
-        </div>
-        <div class="acc-body" style="max-height:0">
-          <div class="acc-body-inner">${item.a}</div>
-        </div>`;
-      div.querySelector('.acc-header').addEventListener('click', () => {
-        const isOpen = div.classList.contains('open');
-        // Close all
-        document.querySelectorAll('.acc-item').forEach(el => {
-          el.classList.remove('open');
-          el.querySelector('.acc-body').style.maxHeight = '0';
-        });
-        // Open clicked (if it was closed)
-        if (!isOpen) {
-          div.classList.add('open');
-          div.querySelector('.acc-body').style.maxHeight = '500px';
-        }
-      });
-      accordionRoot.appendChild(div);
-    });
-
-    /* ── 5. Scroll-triggered animate-in (sections 01-06) ─────────── */
-    const animEls = document.querySelectorAll(
-      '.anim-fade, .anim-left, .anim-right, .anim-scale, .section-label'
-    );
-    const animObs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('visible'); animObs.unobserve(e.target); }
-      });
-    }, { threshold: 0.12 });
-    animEls.forEach(el => animObs.observe(el));
-
-    /* ── 6. Timeline vertical line draw-in ───────────────────────── */
-    const lineEl = document.getElementById('timelineLine');
-    if (lineEl) {
-      const lineObs = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) { lineEl.classList.add('drawn'); lineObs.unobserve(lineEl); }
-        });
-      }, { threshold: 0.1 });
-      lineObs.observe(lineEl);
-    }
-
-    /* ── 7. Animated counters (About section stats) ──────────────── */
-    function animateCounter(el) {
-      const target   = parseInt(el.dataset.target, 10);
-      const prefix   = el.dataset.prefix || '';
-      const sfx      = el.dataset.suffix  || '';
-      const duration = 2000;
-      let   start    = null;
-      (function step(ts) {
-        if (!start) start = ts;
-        const p    = Math.min((ts - start) / duration, 1);
-        const ease = 1 - Math.pow(1 - p, 4);
-        el.textContent = prefix + Math.floor(ease * target) + sfx;
-        if (p < 1) requestAnimationFrame(step);
-        else el.textContent = prefix + target + sfx;
-      })(performance.now());
-      /* restart via rAF on first real frame */
-      el.textContent = prefix + '0' + sfx;
-      requestAnimationFrame(ts => {
-        start = null;
-        (function step(ts2) {
-          if (!start) start = ts2;
-          const p    = Math.min((ts2 - start) / duration, 1);
-          const ease = 1 - Math.pow(1 - p, 4);
-          el.textContent = prefix + Math.floor(ease * target) + sfx;
-          if (p < 1) requestAnimationFrame(step);
-          else el.textContent = prefix + target + sfx;
-        })(ts);
-      });
-    }
-    const counterEls = document.querySelectorAll('.stat-value-gradient[data-target]');
-    const counterObs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { animateCounter(e.target); counterObs.unobserve(e.target); }
-      });
-    }, { threshold: 0.1 });
-    counterEls.forEach(el => counterObs.observe(el));
-
-    /* ── 8. Starfield canvas (Prizes section) ────────────────────── */
-    const canvas = document.getElementById('starCanvas');
-    if (canvas) {
-      const ctx   = canvas.getContext('2d');
-      const stars = Array.from({ length: 120 }, () => ({
-        x: Math.random(), y: Math.random(),
-        r: Math.random() * 1.2 + 0.2,
-        a: Math.random() * 0.6 + 0.1
-      }));
-      function drawStars() {
-        canvas.width  = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        stars.forEach(s => {
-          ctx.beginPath();
-          ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255,255,255,${s.a})`;
-          ctx.fill();
-        });
-      }
-      drawStars();
-      window.addEventListener('resize', drawStars);
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
