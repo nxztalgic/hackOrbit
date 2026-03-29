@@ -137,6 +137,31 @@ window.scrollTo({ top: 0, behavior: 'instant' });
       },
       { passive: true },
     );
+
+    // Video fallback for slow connection / failed playback
+    const heroVideo = document.getElementById("heroVideo");
+    const fallbackImg = document.querySelector(".video__container img.video-fallback");
+    if (heroVideo && fallbackImg) {
+      // If video fails to load at all, show the fallback image
+      heroVideo.addEventListener("error", () => {
+        heroVideo.style.display = "none";
+        fallbackImg.style.display = "block";
+      });
+
+      // Also check `stalled` event as poor network may pause load
+      heroVideo.addEventListener("stalled", () => {
+        fallbackImg.style.display = "block";
+      });
+
+      heroVideo.addEventListener("canplay", () => {
+        fallbackImg.style.display = "none";
+      });
+
+      heroVideo.addEventListener("playing", () => {
+        fallbackImg.style.display = "none";
+        heroVideo.style.display = "block";
+      });
+    }
   })();
 
 

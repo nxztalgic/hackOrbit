@@ -95,9 +95,13 @@
   <!-- Hero Section -->
    <div id="hero-container">
 
-  <!-- Video background — untouched -->
+  <!-- Video background — with fallback thumbnail and error fallback -->
   <div class="video__container">
-    <video src="./spectraNoise.webm" autoplay loop muted playsinline></video>
+    <video id="heroVideo" poster="./Spectra.png" autoplay loop muted playsinline>
+      <source src="./spectraNoise.webm" type="video/webm">
+      <!-- fallback for really old browsers or if video fails to load -->
+      <img src="./Spectra.png" alt="Spectra background fallback" class="video-fallback">
+    </video>
   </div>
 
   <div class="hero__section">

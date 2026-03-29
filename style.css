@@ -310,10 +310,20 @@ body {
   z-index: -1;
 }
 
-.video__container video {
+.video__container video,
+.video__container img.video-fallback {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  position: absolute;
+  inset: 0;
+  top: 0;
+  left: 0;
+}
+
+.video__container img.video-fallback {
+  display: none;
+  z-index: -1;
 }
 
 .hero__section {
